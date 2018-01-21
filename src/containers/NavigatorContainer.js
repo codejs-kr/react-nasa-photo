@@ -1,47 +1,30 @@
 import React, { Component } from 'react';
-import Viewer from 'components/Viewer';
+import Navigator from 'components/Navigator';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as apodActions from 'store/modules/apod';
 
-class ViewerContainer extends Component {
-  req = null;
-
-  getApod = async () => {
-    const { ApodActions, loading, date } = this.props;
-    loading && this.req.cancel(); // 로딩중이라면 취소하기
-
-    try {
-      // this.req 에 Promise 담기
-      this.req = ApodActions.getApod(date || '');
-      console.log('확인', this.props.url);
-
-      await this.req; // 끝날 때 까지 대기
-    } catch (e) {
-      console.log(e);
-    }
+class NavigatorContainer extends Component {
+  handlePrev = () => {
+    const { ApodActions } = this.props;
+    ApodActions.previous();
   };
 
-  componentDidMount() {
-    this.getApod();
-  }
+  handleNext = () => {
+    const { ApodActions, date, maxDate } = this.props;
+    console.log('확인 maxDate', maxDate);
 
-  componentDidUpdate(prevProps, prevState) {
-    if(this.props.date !== prevProps.date) {
-      this.getApod();
-    }
-  }
+    if (date === maxDate) return; // 오늘이면 여기서 스탑
+    ApodActions.next();
+  };
 
   render() {
-    const { date, url, title, mediaType, loading } = this.props;
+    const { handlePrev, handleNext } = this;
 
     return (
-      <Viewer
-        date={date}
-        url={url}
-        title={title}
-        mediaType={mediaType}
-        loading={loading}
+      <Navigator
+        onPrev={handlePrev}
+        onNext={handleNext}
       />
     );
   }
@@ -50,12 +33,9 @@ class ViewerContainer extends Component {
 export default connect(
   ({ apod }) => ({
     date: apod.date,
-    url: apod.url,
-    title: apod.title,
-    mediaType: apod.mediaType,
-    loading: apod.loading
+    maxDate: apod.maxDate
   }),
   (dispatch) => ({
     ApodActions: bindActionCreators(apodActions, dispatch)
   })
-)(ViewerContainer);
+)(NavigatorContainer);

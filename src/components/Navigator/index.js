@@ -1,1 +1,1 @@
-export { default } from './SpaceNavigator';
+export { default } from './Navigator';
